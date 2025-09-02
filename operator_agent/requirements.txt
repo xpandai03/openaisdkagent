@@ -1,0 +1,9 @@
+openai>=1.40.0
+openai-agents>=0.1.0
+fastapi
+uvicorn[standard]
+pydantic
+python-dotenv
+httpx
+Pillow
+mcp>=0.1.0
