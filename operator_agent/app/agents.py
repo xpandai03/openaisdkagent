@@ -54,23 +54,21 @@ def create_agent() -> Optional[Any]:
             logger.warning(f"Could not initialize FileSearch: {e}")
     
     # Computer Use Tool
-    # Temporarily disabled due to initialization issues
-    # if ComputerTool:
-    #     try:
-    #         from app.runtimes.computer_adapter import get_computer_adapter
-    #         
-    #         # Get adapter based on mode
-    #         adapter = get_computer_adapter()
-    #         capabilities = adapter.get_capabilities()
-    #         
-    #         # Create ComputerTool with adapter
-    #         # Note: ComputerTool in agents SDK has specific requirements
-    #         # Try without parameters first
-    #         computer_tool = ComputerTool()
-    #         tools.append(computer_tool)
-    #         logger.info(f"ComputerTool enabled in {capabilities['mode']} mode")
-    #     except Exception as e:
-    #         logger.warning(f"Could not initialize ComputerTool: {e}")
+    # Enable ComputerTool for desktop/browser control
+    if ComputerTool:
+        try:
+            # ComputerTool requires a Computer implementation
+            from app.mock_computer import MockComputer
+            
+            # Create a mock computer for testing
+            mock_computer = MockComputer()
+            
+            # Create ComputerTool with the mock computer
+            computer_tool = ComputerTool(computer=mock_computer)
+            tools.append(computer_tool)
+            logger.info(f"ComputerTool enabled with MockComputer - will simulate screenshots and actions")
+        except Exception as e:
+            logger.warning(f"Could not initialize ComputerTool: {e}")
     
     # Airtable tool (if configured)
     if settings.has_airtable and FunctionTool:

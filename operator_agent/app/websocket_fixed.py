@@ -124,13 +124,27 @@ async def stream_agent_response_simple(websocket: WebSocket, task: str, session_
                                     logger.debug(f"Sent text delta: {delta_text}")
                             
                             # Handle tool call events
-                            elif nested_type == 'response.tool_call':
+                            elif nested_type == 'response.tool_call' or 'tool' in nested_type:
                                 tool_name = getattr(event_data, 'name', 'Unknown')
                                 logger.info(f"Tool called: {tool_name}")
                                 tool_calls.append({"name": tool_name, "status": "executed"})
+                                
+                                # Special handling for ComputerTool
+                                tool_data = {"name": tool_name}
+                                if tool_name == 'ComputerTool' or 'computer' in tool_name.lower():
+                                    # Extract any screenshot or action data
+                                    if hasattr(event_data, 'screenshot'):
+                                        tool_data['screenshot'] = event_data.screenshot
+                                    if hasattr(event_data, 'action'):
+                                        tool_data['action'] = event_data.action
+                                    if hasattr(event_data, 'coordinates'):
+                                        tool_data['coordinates'] = event_data.coordinates
+                                    tool_data['type'] = 'computer'
+                                    logger.info(f"Computer action detected: {tool_data}")
+                                
                                 await websocket.send_json({
                                     "type": "tool_call",
-                                    "tool": {"name": tool_name}
+                                    "tool": tool_data
                                 })
                             
                             # Handle completion
